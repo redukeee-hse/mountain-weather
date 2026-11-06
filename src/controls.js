@@ -1,9 +1,10 @@
 /**
- * Панель управления: поиск, выбор горной системы, «Обновить», «Сбросить».
+ * Панель управления: поиск, фильтр, сортировка, «Обновить», «Сбросить».
  *
  * setupControls(container, handlers) → { setCategories, setBusy }
  *   onSearch(query)          — ввод в поле поиска (с задержкой 300 мс) или Enter
  *   onCategoryChange(slug)   — выбор горной системы; '' — все
+ *   onSortChange(sort)       — сортировка уже загруженных вершин
  *   onRefresh()              — кнопка «Обновить»
  *   onReset()                — кнопка «Сбросить» (поле и фильтр уже очищены)
  */
@@ -14,10 +15,11 @@ const SEARCH_DELAY_MS = 300
  * @param {HTMLElement} container
  * @param {{ onSearch: (query: string) => void,
  *           onCategoryChange: (slug: string) => void,
+ *           onSortChange: (sort: string) => void,
  *           onRefresh: () => void,
  *           onReset: () => void }} handlers
  */
-export function setupControls(container, { onSearch, onCategoryChange, onRefresh, onReset }) {
+export function setupControls(container, { onSearch, onCategoryChange, onSortChange, onRefresh, onReset }) {
   container.innerHTML = `
     <form class="controls-form" role="search">
       <label class="field field--search">
@@ -28,6 +30,18 @@ export function setupControls(container, { onSearch, onCategoryChange, onRefresh
           </svg>
           <input class="input" type="search" name="query" autocomplete="off"
                  placeholder="Эльбрус, Непал, Matterhorn…" />
+        </span>
+      </label>
+
+      <label class="field field--sort">
+        <span class="field-label">Сортировка</span>
+        <span class="field-control">
+          <select class="input select" name="sort">
+            <option value="elevation">По высоте</option>
+            <option value="temperature">По температуре (холодные)</option>
+            <option value="wind">По ветру (сильный)</option>
+            <option value="name">По названию</option>
+          </select>
         </span>
       </label>
 
@@ -56,6 +70,7 @@ export function setupControls(container, { onSearch, onCategoryChange, onRefresh
   const form = container.querySelector('form')
   const input = form.elements.namedItem('query')
   const select = form.elements.namedItem('range')
+  const sortSelect = form.elements.namedItem('sort')
   const refreshButton = form.querySelector('[data-action="refresh"]')
   const resetButton = form.querySelector('[data-action="reset"]')
 
@@ -63,7 +78,7 @@ export function setupControls(container, { onSearch, onCategoryChange, onRefresh
   let lastQuery = ''
 
   const updateReset = () => {
-    resetButton.hidden = !input.value.trim() && !select.value
+    resetButton.hidden = !input.value.trim() && !select.value && sortSelect.value === 'elevation'
   }
 
   const submitQuery = () => {
@@ -90,12 +105,18 @@ export function setupControls(container, { onSearch, onCategoryChange, onRefresh
     onCategoryChange(select.value)
   })
 
+  sortSelect.addEventListener('change', () => {
+    updateReset()
+    onSortChange(sortSelect.value)
+  })
+
   refreshButton.addEventListener('click', () => onRefresh())
 
   resetButton.addEventListener('click', () => {
     clearTimeout(timer)
     input.value = ''
     select.value = ''
+    sortSelect.value = 'elevation'
     lastQuery = ''
     updateReset()
     onReset()

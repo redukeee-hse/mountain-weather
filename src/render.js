@@ -15,11 +15,18 @@ const MAX_ELEVATION = 8849
 /**
  * @param {HTMLElement} container
  * @param {import('./api.js').MountainWithWeather[]} mountains
+ * @param {string} sort
  */
-export function renderMountains(container, mountains) {
+export function renderMountains(container, mountains, sort = 'elevation') {
   const summary = document.createElement('p')
   summary.className = 'results-summary'
-  summary.textContent = `${pluralize(mountains.length, ['вершина', 'вершины', 'вершин'])} · от самой высокой`
+  const sortLabels = {
+    elevation: 'от самой высокой',
+    temperature: 'от самой холодной',
+    wind: 'от самого сильного ветра',
+    name: 'по названию',
+  }
+  summary.textContent = `${pluralize(mountains.length, ['вершина', 'вершины', 'вершин'])} · ${sortLabels[sort] ?? sortLabels.elevation}`
 
   const grid = document.createElement('div')
   grid.className = 'grid'
@@ -34,6 +41,9 @@ function createCard(mountain) {
 
   const card = el('article', 'card')
   card.dataset.id = mountain.id
+  card.tabIndex = 0
+  card.setAttribute('role', 'button')
+  card.setAttribute('aria-label', `Подробнее о вершине ${mountain.name}`)
 
   // Верх карточки: небо по погоде, силуэт горы, высота и горная система
   const media = el('div', `card-media sky--${skyType(weather.code)}`)

@@ -103,7 +103,7 @@
 
 .controls-form {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) auto;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 1.2fr) auto;
   gap: 12px;
   align-items: end;
 }
@@ -244,6 +244,37 @@
 .card:hover {
   transform: translateY(-3px);
   box-shadow: 0 12px 30px rgb(15 23 42 / 14%);
+}
+
+.card {
+  cursor: pointer;
+}
+
+.card:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.card-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-media:has(.card-photo)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 35%, var(--color-photo-shade));
+  pointer-events: none;
+}
+
+.card-media:has(.card-photo) .chip,
+.card-media:has(.card-photo) .card-elevation,
+.card-media:has(.card-photo) .card-weather-icon {
+  z-index: 1;
 }
 
 .card-media {
@@ -456,7 +487,7 @@
 
 @media (max-width: 960px) {
   .controls-form {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .controls-actions {
